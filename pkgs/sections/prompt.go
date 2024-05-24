@@ -53,26 +53,31 @@ func (p *Prompt) IsFocused() bool {
 
 func (p *Prompt) Update(msg tea.Msg) (Section, tea.Cmd) {
 	if p.focused {
+
+		switch msg := msg.(type) {
+		case tea.KeyMsg:
+			switch msg.Type {
+			case tea.KeyEnter:
+				prompt := p.textarea.Value()
+				p.textarea.Reset()
+
+				return p, func() tea.Msg { return teamsgs.ChatPromptMsg(prompt) }
+			}
+		}
+
 		vp, cmd := p.textarea.Update(msg)
 		p.textarea = vp
 		return p, cmd
-	}
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.Type {
-		case tea.KeyEnter:
-			prompt := p.textarea.Value()
-			p.textarea.Reset()
-
-			return p, func() tea.Msg { return teamsgs.ChatPromptMsg(prompt) }
-		}
 	}
 	return p, nil
 }
 
 func (p *Prompt) View() string {
-	if p.focused {
-		return p.style.Width(styles.Width).Render(p.textarea.View())
+	if !p.hidden {
+		if p.focused {
+			return styles.ActiveStyle.Render(p.textarea.View())
+		}
+		return styles.InactiveStyle.Render(p.textarea.View())
 	}
 	return ""
 }

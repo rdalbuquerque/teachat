@@ -12,6 +12,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/muesli/reflow/wordwrap"
 )
 
 type Convo struct {
@@ -65,13 +66,23 @@ func (c *Convo) Update(msg tea.Msg) (Section, tea.Cmd) {
 	case teamsgs.ChatStreamMsg:
 		cs := types.ChatStream{Stream: msg}
 		return c, func() tea.Msg { return c.receiveChatStream(cs) }
+	case teamsgs.ChatStreamDeltaMsg:
+		curMessage := c.messages[len(c.messages)-1]
+		curMessage = curMessage + msg.Response.Text
+		c.messages[len(c.messages)-1] = wordwrap.String(curMessage, c.viewport.Width)
+		c.viewport.SetContent(strings.Join(c.messages, "\n"))
+		c.viewport.GotoBottom()
+		return c, func() tea.Msg { return c.receiveChatStream(types.ChatStream(msg)) }
 	}
 	return c, nil
 }
 
 func (c Convo) View() string {
-	if c.focused {
-		return c.style.Width(styles.Width).Render(c.viewport.View())
+	if !c.hidden {
+		if c.focused {
+			return styles.ActiveStyle.Render(c.viewport.View())
+		}
+		return styles.InactiveStyle.Render(c.viewport.View())
 	}
 	return ""
 }
