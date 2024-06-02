@@ -11,9 +11,10 @@ type SectionConstructor func(context.Context) sections.Section
 
 var (
 	sectionNewFuncs = map[sections.SectionName]SectionConstructor{
-		sections.HelpSection:   sections.NewHelp,
-		sections.PromptSection: sections.NewPrompt,
-		sections.ConvoSection:  sections.NewConvo,
+		sections.ModelListSection: sections.NewModelList,
+		sections.HelpSection:      sections.NewHelp,
+		sections.PromptSection:    sections.NewPrompt,
+		sections.ConvoSection:     sections.NewConvo,
 	}
 )
 

@@ -1,6 +1,8 @@
 package utils
 
-import tea "github.com/charmbracelet/bubbletea"
+import (
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 func Ptr[T any](input T) *T {
 	return &input

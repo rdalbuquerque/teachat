@@ -6,6 +6,7 @@ import (
 
 	"teachat/pkgs/pages"
 	"teachat/pkgs/styles"
+	"teachat/pkgs/teamsg"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -23,9 +24,11 @@ func initialModel() model {
 	ctx, cancel := context.WithCancel(context.Background())
 	helpPage := pages.NewHelpPage()
 	chatPage := pages.NewChatPage()
+	modelSelectionPage := pages.NewModelSelectionPage()
 	pagesMap := map[pages.PageName]pages.PageInterface{
-		pages.ChatPage: chatPage,
-		pages.HelpPage: helpPage,
+		pages.ModelSelectionPage: modelSelectionPage,
+		pages.ChatPage:           chatPage,
+		pages.HelpPage:           helpPage,
 	}
 	pageStack := pages.Stack{}
 	m := model{
@@ -34,7 +37,7 @@ func initialModel() model {
 		pages:     pagesMap,
 		pageStack: pageStack,
 	}
-	m.addPage(pages.ChatPage)
+	m.addPage(pages.ModelSelectionPage)
 	return m
 }
 
@@ -66,6 +69,8 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			p.SetDimensions(m.width, msg.Height-3)
 		}
 		return m, nil
+	case teamsg.ModelSelectedMsg:
+		m.addPage(pages.ChatPage)
 	}
 	// update all pages
 	updatedPages := make(map[pages.PageName]pages.PageInterface)
@@ -89,11 +94,7 @@ func (m *model) addPage(pageName pages.PageName) {
 	}
 	p := m.pages[pageName]
 	if p == nil {
-		availablePages := make([]string, 0, len(m.pages))
-		for k := range m.pages {
-			availablePages = append(availablePages, string(k))
-		}
-		return
+		panic(fmt.Sprintf("page %s not found", pageName))
 	}
 	p.SetAsCurrentPage()
 	m.pageStack.Push(p)

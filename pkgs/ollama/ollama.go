@@ -21,6 +21,12 @@ import (
 	"github.com/ollama/ollama/version"
 )
 
+func GetSupportedModels() []types.Model {
+	return []types.Model{
+		types.Llama3,
+	}
+}
+
 type Client struct {
 	base     *url.URL
 	http     *http.Client
@@ -91,12 +97,12 @@ func GetOllamaHost() (OllamaHost, error) {
 	}, nil
 }
 
-func ClientFromEnvironment(model types.Model, stream bool) (llminterface.Client, error) {
+func New(stream bool) llminterface.Client {
 	ollamaHost, err := GetOllamaHost()
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
-
+	model := types.Llama3
 	return &Client{
 		model:  model,
 		stream: stream,
@@ -105,7 +111,11 @@ func ClientFromEnvironment(model types.Model, stream bool) (llminterface.Client,
 			Host:   net.JoinHostPort(ollamaHost.Host, ollamaHost.Port),
 		},
 		http: http.DefaultClient,
-	}, nil
+	}
+}
+
+func (c *Client) SetModel(model types.Model) {
+	c.model = model
 }
 
 func (c *Client) Prompt(ctx context.Context, prompt string) (types.StreamReader, error) {

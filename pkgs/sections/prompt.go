@@ -3,7 +3,7 @@ package sections
 import (
 	"context"
 	"teachat/pkgs/styles"
-	"teachat/pkgs/teamsgs"
+	"teachat/pkgs/teamsg"
 
 	"github.com/charmbracelet/bubbles/textarea"
 	tea "github.com/charmbracelet/bubbletea"
@@ -61,7 +61,7 @@ func (p *Prompt) Update(msg tea.Msg) (Section, tea.Cmd) {
 				prompt := p.textarea.Value()
 				p.textarea.Reset()
 
-				return p, func() tea.Msg { return teamsgs.ChatPromptMsg(prompt) }
+				return p, func() tea.Msg { return teamsg.ChatPromptMsg(prompt) }
 			}
 		}
 

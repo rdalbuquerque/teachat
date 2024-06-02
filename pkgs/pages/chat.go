@@ -4,6 +4,7 @@ import (
 	"context"
 	"teachat/pkgs/sections"
 	"teachat/pkgs/styles"
+	"teachat/pkgs/teamsg"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -59,6 +60,20 @@ func (p *Chat) AddSection(ctx context.Context, section sections.SectionName) {
 
 func (p *Chat) Update(msg tea.Msg) (PageInterface, tea.Cmd) {
 	var cmds []tea.Cmd
+	if !p.current {
+		switch msg := msg.(type) {
+		case tea.WindowSizeMsg, teamsg.ModelSelectedMsg:
+			// update all sections
+			for i, s := range p.sections {
+				var cmd tea.Cmd
+				s, cmd = s.Update(msg)
+				cmds = append(cmds, cmd)
+				p.sections[i] = s
+			}
+			return p, tea.Batch(cmds...)
+		}
+		return p, nil
+	}
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {

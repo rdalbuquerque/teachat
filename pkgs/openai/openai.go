@@ -13,16 +13,30 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
-func New(model types.Model, stream bool) llminterface.Client {
+func GetSupportedModels() []types.Model {
+	return []types.Model{
+		types.GPT35,
+		types.GPT4,
+		types.GPT4o,
+	}
+}
+
+func New(stream bool) llminterface.Client {
 	openai_api_key := os.Getenv("OPENAI_API_KEY")
 	c := openai.NewClient(openai_api_key)
 	messages := make([]openai.ChatCompletionMessage, 0)
+	// default type
+	model := types.GPT35
 	return &Client{
 		Client:   c,
 		model:    model,
 		stream:   stream,
 		messages: messages,
 	}
+}
+
+func (c *Client) SetModel(model types.Model) {
+	c.model = model
 }
 
 type streamReader struct {

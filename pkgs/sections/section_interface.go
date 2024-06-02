@@ -19,7 +19,8 @@ type Section interface {
 type SectionName string
 
 const (
-	HelpSection   SectionName = "help"
-	PromptSection SectionName = "prompt"
-	ConvoSection  SectionName = "convo"
+	HelpSection      SectionName = "help"
+	PromptSection    SectionName = "prompt"
+	ConvoSection     SectionName = "convo"
+	ModelListSection SectionName = "modellist"
 )

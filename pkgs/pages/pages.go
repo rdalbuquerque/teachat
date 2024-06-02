@@ -8,8 +8,9 @@ import (
 type PageName string
 
 const (
-	HelpPage PageName = "help"
-	ChatPage PageName = "chat"
+	HelpPage           PageName = "help"
+	ChatPage           PageName = "chat"
+	ModelSelectionPage PageName = "modelselection"
 )
 
 type Stack []PageInterface
