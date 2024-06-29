@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"teachat/pkgs/pages"
 	"teachat/pkgs/styles"
@@ -42,7 +43,8 @@ func initialModel() model {
 }
 
 func (m *model) Init() tea.Cmd {
-	return nil
+	os.Remove("msgdebug.log")
+	return func() tea.Msg { return teamsg.GetSupportedModelsMsg(true) }
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {

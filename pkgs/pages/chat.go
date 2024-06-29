@@ -62,7 +62,7 @@ func (p *Chat) Update(msg tea.Msg) (PageInterface, tea.Cmd) {
 	var cmds []tea.Cmd
 	if !p.current {
 		switch msg := msg.(type) {
-		case tea.WindowSizeMsg, teamsg.ModelSelectedMsg:
+		case tea.WindowSizeMsg, teamsg.ModelSelectedMsg, teamsg.GetSupportedModelsMsg:
 			// update all sections
 			for i, s := range p.sections {
 				var cmd tea.Cmd

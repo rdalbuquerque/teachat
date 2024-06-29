@@ -14,13 +14,6 @@ type Model string
 // implement list.Item interface
 func (m Model) FilterValue() string { return "" }
 
-const (
-	Llama3 Model = "llama3"
-	GPT35  Model = "gpt-3.5-turbo-0125"
-	GPT4   Model = "gpt-4"
-	GPT4o  Model = "gpt-4o"
-)
-
 type StreamReader interface {
 	Bytes() []byte
 	Scan() bool

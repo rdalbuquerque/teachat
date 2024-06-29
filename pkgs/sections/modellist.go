@@ -17,11 +17,7 @@ type ModelList struct {
 }
 
 func NewModelList(_ context.Context) Section {
-	list := list.New([]list.Item{
-		types.GPT35,
-		types.GPT4,
-		types.GPT4o,
-	}, types.ModelItemDelegate{}, 0, 0)
+	list := list.New([]list.Item{}, types.ModelItemDelegate{}, 0, 0)
 
 	return &ModelList{
 		list: list,
@@ -43,7 +39,6 @@ func (s *ModelList) IsFocused() bool {
 
 func (s *ModelList) Update(msg tea.Msg) (Section, tea.Cmd) {
 	if s.focused {
-
 		switch msg := msg.(type) {
 		case tea.KeyMsg:
 			switch msg.Type {
@@ -51,11 +46,16 @@ func (s *ModelList) Update(msg tea.Msg) (Section, tea.Cmd) {
 				selectedModel := s.list.SelectedItem().(types.Model)
 				return s, func() tea.Msg { return teamsg.ModelSelectedMsg(selectedModel) }
 			}
+			vp, cmd := s.list.Update(msg)
+			s.list = vp
+			return s, cmd
+		case teamsg.ModelsMsg:
+			items := make([]list.Item, len(msg.Models))
+			for i, model := range msg.Models {
+				items[i] = types.Model(model)
+			}
+			return s, s.list.SetItems(items)
 		}
-
-		vp, cmd := s.list.Update(msg)
-		s.list = vp
-		return s, cmd
 	}
 	return s, nil
 }

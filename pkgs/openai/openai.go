@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"teachat/pkgs/llminterface"
 	"teachat/pkgs/types"
 	"teachat/pkgs/utils"
@@ -13,12 +14,18 @@ import (
 	openai "github.com/sashabaranov/go-openai"
 )
 
-func GetSupportedModels() []types.Model {
-	return []types.Model{
-		types.GPT35,
-		types.GPT4,
-		types.GPT4o,
+func (c *Client) GetSupportedModels() []string {
+	resp, err := c.ListModels(context.Background())
+	if err != nil {
+		panic(err)
 	}
+	var gptModels []string
+	for i := range resp.Models {
+		if strings.Contains(resp.Models[i].ID, "gpt") {
+			gptModels = append(gptModels, resp.Models[i].ID)
+		}
+	}
+	return gptModels
 }
 
 func New(stream bool) llminterface.Client {
@@ -26,16 +33,14 @@ func New(stream bool) llminterface.Client {
 	c := openai.NewClient(openai_api_key)
 	messages := make([]openai.ChatCompletionMessage, 0)
 	// default type
-	model := types.GPT35
 	return &Client{
 		Client:   c,
-		model:    model,
 		stream:   stream,
 		messages: messages,
 	}
 }
 
-func (c *Client) SetModel(model types.Model) {
+func (c *Client) SetModel(model string) {
 	c.model = model
 }
 
@@ -73,7 +78,7 @@ type Client struct {
 	messages        []openai.ChatCompletionMessage
 	currentResponse string
 	*openai.Client
-	model  types.Model
+	model  string
 	stream bool
 }
 
@@ -86,10 +91,9 @@ func (c *Client) Prompt(ctx context.Context, prompt string) (types.StreamReader,
 		utils.LogToFile("openai.log", "info", fmt.Sprintf("role: %s, message: %s", message.Role, message.Content))
 	}
 	req := openai.ChatCompletionRequest{
-		Model:     string(c.model),
-		MaxTokens: 120,
-		Messages:  c.messages,
-		Stream:    c.stream,
+		Model:    string(c.model),
+		Messages: c.messages,
+		Stream:   c.stream,
 	}
 	chatStream, err := c.Client.CreateChatCompletionStream(ctx, req)
 	if err != nil {

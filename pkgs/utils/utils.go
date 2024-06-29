@@ -14,5 +14,5 @@ func LogToFile(path, prefix, content string) {
 		panic(err)
 	}
 	defer f.Close()
-	f.WriteString(content + "\n")
+	f.WriteString(prefix + "|" + content + "\n")
 }

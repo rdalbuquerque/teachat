@@ -21,17 +21,31 @@ import (
 	"github.com/ollama/ollama/version"
 )
 
-func GetSupportedModels() []types.Model {
-	return []types.Model{
-		types.Llama3,
+func (c *Client) GetSupportedModels() []string {
+	resp, err := c.getStream(context.Background(), http.MethodGet, "/api/tags", nil)
+	if err != nil {
+		panic(err)
 	}
+	// read through response and set ModelResponse object
+	// to the response from the server
+	var modelResp ListResponse
+	for resp.Scan() {
+		if err := json.Unmarshal(resp.Bytes(), &modelResp); err != nil {
+			panic(err)
+		}
+	}
+	var chatModels []string
+	for i := range modelResp.Models {
+		chatModels = append(chatModels, modelResp.Models[i].Model)
+	}
+	return chatModels
 }
 
 type Client struct {
 	base     *url.URL
 	http     *http.Client
 	stream   bool
-	model    types.Model
+	model    string
 	messages []Message
 }
 
@@ -102,9 +116,7 @@ func New(stream bool) llminterface.Client {
 	if err != nil {
 		panic(err)
 	}
-	model := types.Llama3
 	return &Client{
-		model:  model,
 		stream: stream,
 		base: &url.URL{
 			Scheme: ollamaHost.Scheme,
@@ -114,7 +126,7 @@ func New(stream bool) llminterface.Client {
 	}
 }
 
-func (c *Client) SetModel(model types.Model) {
+func (c *Client) SetModel(model string) {
 	c.model = model
 }
 
@@ -152,10 +164,13 @@ func (c Client) getStream(ctx context.Context, method, path string, data any) (t
 		}
 
 		buf = bytes.NewBuffer(bts)
+	} else {
+		buf = bytes.NewBuffer(nil)
+
 	}
 
 	requestURL := c.base.JoinPath(path)
-	utils.LogToFile("ollama.log", "info", fmt.Sprintf("requestURL: %v", requestURL.String()))
+	utils.LogToFile("ollama.log", "info", fmt.Sprintf("requestURL: %s", requestURL.String()))
 	request, err := http.NewRequestWithContext(ctx, method, requestURL.String(), buf)
 	if err != nil {
 		return nil, err
