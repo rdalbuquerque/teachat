@@ -4,18 +4,12 @@ import (
 	"teachat/pkgs/llminterface"
 	"teachat/pkgs/ollama"
 	"teachat/pkgs/openai"
-)
-
-type Platform string
-
-const (
-	OpenAI Platform = "openai"
-	Ollama Platform = "ollama"
+	"teachat/pkgs/types"
 )
 
 type InitFunc func(bool) llminterface.Client
 
-var PlatformInitialization = map[Platform]InitFunc{
-	OpenAI: openai.New,
-	Ollama: ollama.New,
+var PlatformInitialization = map[types.LLMPlatform]InitFunc{
+	types.OpenAI: openai.New,
+	types.Ollama: ollama.New,
 }

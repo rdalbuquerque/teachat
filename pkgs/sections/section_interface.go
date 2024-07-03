@@ -14,6 +14,7 @@ type Section interface {
 	View() string
 	Update(msg tea.Msg) (Section, tea.Cmd)
 	SetDimensions(width, height int)
+	GetSectionName() SectionName
 }
 
 type SectionName string

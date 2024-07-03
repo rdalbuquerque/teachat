@@ -1,7 +1,6 @@
 package sections
 
 import (
-	"context"
 	"teachat/pkgs/styles"
 
 	"github.com/charmbracelet/bubbles/viewport"
@@ -66,7 +65,7 @@ type Help struct {
 	style    lipgloss.Style
 }
 
-func NewHelp(_ context.Context) Section {
+func NewHelp() Section {
 	vp := viewport.New(0, 0)
 
 	renderer, err := glamour.NewTermRenderer(
@@ -87,6 +86,10 @@ func NewHelp(_ context.Context) Section {
 		viewport: vp,
 		style:    styles.ActiveStyle.Copy(),
 	}
+}
+
+func (h *Help) GetSectionName() SectionName {
+	return HelpSection
 }
 
 func (h *Help) SetDimensions(width, height int) {

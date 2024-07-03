@@ -9,7 +9,10 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-type Model string
+type Model struct {
+	Name     LLMModel
+	Platform LLMPlatform
+}
 
 // implement list.Item interface
 func (m Model) FilterValue() string { return "" }
@@ -45,7 +48,7 @@ func (d ModelItemDelegate) Render(w io.Writer, m list.Model, index int, listItem
 	if !ok {
 		return
 	}
-	modelStr := string(i)
+	modelStr := fmt.Sprintf("%s (%s)", i.Name, i.Platform)
 	fn := itemStyle.Render
 	if index == m.Index() {
 		fn = func(s ...string) string {
@@ -55,3 +58,19 @@ func (d ModelItemDelegate) Render(w io.Writer, m list.Model, index int, listItem
 
 	fmt.Fprint(w, fn(modelStr))
 }
+
+type LLMModel string
+
+const (
+	GPT35  LLMModel = "gpt-3.5-turbo"
+	GPT4   LLMModel = "gpt-4"
+	GPT4o  LLMModel = "gpt-4o"
+	Llama3 LLMModel = "llama3"
+)
+
+type LLMPlatform string
+
+const (
+	OpenAI LLMPlatform = "openai"
+	Ollama LLMPlatform = "ollama"
+)

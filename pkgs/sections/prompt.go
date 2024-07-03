@@ -1,7 +1,6 @@
 package sections
 
 import (
-	"context"
 	"teachat/pkgs/styles"
 	"teachat/pkgs/teamsg"
 
@@ -17,7 +16,7 @@ type Prompt struct {
 	style    lipgloss.Style
 }
 
-func NewPrompt(_ context.Context) Section {
+func NewPrompt() Section {
 	ta := textarea.New()
 	ta.Placeholder = "Send a message..."
 	ta.Focus()
@@ -36,6 +35,10 @@ func NewPrompt(_ context.Context) Section {
 		textarea: ta,
 		style:    styles.ActiveStyle.Copy(),
 	}
+}
+
+func (p *Prompt) GetSectionName() SectionName {
+	return PromptSection
 }
 
 func (p *Prompt) SetDimensions(width, height int) {

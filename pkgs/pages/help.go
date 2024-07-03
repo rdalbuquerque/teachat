@@ -1,7 +1,6 @@
 package pages
 
 import (
-	"context"
 	"teachat/pkgs/sections"
 	"teachat/pkgs/styles"
 
@@ -17,7 +16,7 @@ type Help struct {
 func NewHelpPage() PageInterface {
 	p := &Help{}
 	p.name = HelpPage
-	p.AddSection(context.Background(), sections.HelpSection)
+	p.AddSection(sections.NewHelp())
 	return p
 }
 
@@ -37,15 +36,14 @@ func (p *Help) GetPageName() PageName {
 	return p.name
 }
 
-func (p *Help) AddSection(ctx context.Context, section sections.SectionName) {
+func (p *Help) AddSection(section sections.Section) {
 	if p.sections == nil {
 		p.sections = make(map[sections.SectionName]sections.Section)
 	}
-	newSection := sectionNewFuncs[section](ctx)
-	newSection.SetDimensions(0, styles.Height)
-	newSection.Show()
-	newSection.Focus()
-	p.sections[section] = newSection
+	section.SetDimensions(0, styles.Height)
+	section.Show()
+	section.Focus()
+	p.sections[section.GetSectionName()] = section
 }
 
 func (p *Help) View() string {

@@ -1,7 +1,6 @@
 package pages
 
 import (
-	"context"
 	"teachat/pkgs/sections"
 	"teachat/pkgs/styles"
 	"teachat/pkgs/teamsg"
@@ -19,8 +18,8 @@ type Chat struct {
 func NewChatPage() PageInterface {
 	p := &Chat{}
 	p.name = ChatPage
-	p.AddSection(context.Background(), sections.PromptSection)
-	p.AddSection(context.Background(), sections.ConvoSection)
+	p.AddSection(sections.NewPrompt())
+	p.AddSection(sections.NewConvo())
 	p.switchSection()
 	return p
 }
@@ -41,7 +40,7 @@ func (p *Chat) GetPageName() PageName {
 	return p.name
 }
 
-func (p *Chat) AddSection(ctx context.Context, section sections.SectionName) {
+func (p *Chat) AddSection(section sections.Section) {
 	if p.sections == nil {
 		p.sections = make(map[sections.SectionName]sections.Section)
 	}
@@ -50,12 +49,11 @@ func (p *Chat) AddSection(ctx context.Context, section sections.SectionName) {
 			p.sections[sec].Blur()
 		}
 	}
-	newSection := sectionNewFuncs[section](ctx)
-	newSection.SetDimensions(0, styles.Height)
-	newSection.Show()
-	newSection.Focus()
-	p.orderedSections = append(p.orderedSections, section)
-	p.sections[section] = newSection
+	section.SetDimensions(0, styles.Height)
+	section.Show()
+	section.Focus()
+	p.orderedSections = append(p.orderedSections, section.GetSectionName())
+	p.sections[section.GetSectionName()] = section
 }
 
 func (p *Chat) Update(msg tea.Msg) (PageInterface, tea.Cmd) {

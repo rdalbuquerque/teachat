@@ -16,42 +16,30 @@ import (
 )
 
 type Convo struct {
-	hidden           bool
-	focused          bool
-	messages         []string
-	viewport         viewport.Model
-	style            lipgloss.Style
-	chatClients      map[llmclients.Platform]llminterface.Client
-	currentPlatform  llmclients.Platform
-	platformModelMap map[string]llmclients.Platform
+	hidden     bool
+	focused    bool
+	messages   []string
+	viewport   viewport.Model
+	style      lipgloss.Style
+	chatClient llminterface.Client
 }
 
-func NewConvo(_ context.Context) Section {
+func NewConvo() Section {
 
 	vp := viewport.New(0, 0)
 	vp.SetContent(`Welcome to the chat room!
 Type a message and press Enter to send.`)
 
-	supportedPlatforms := []llmclients.Platform{
-		llmclients.OpenAI,
-		llmclients.Ollama,
-	}
-	chatClients := make(map[llmclients.Platform]llminterface.Client)
-	for _, platform := range supportedPlatforms {
-		platformClient := llmclients.PlatformInitialization[platform](true)
-		chatClients[platform] = platformClient
-	}
-
-	platformModelMap := make(map[string]llmclients.Platform)
-
 	convo := &Convo{
-		platformModelMap: platformModelMap,
-		viewport:         vp,
-		style:            styles.ActiveStyle.Copy(),
-		chatClients:      chatClients,
+		viewport: vp,
+		style:    styles.ActiveStyle.Copy(),
 	}
 
 	return convo
+}
+
+func (c *Convo) GetSectionName() SectionName {
+	return ConvoSection
 }
 
 func (c *Convo) SetDimensions(width, height int) {
@@ -94,28 +82,10 @@ func (c *Convo) Update(msg tea.Msg) (Section, tea.Cmd) {
 		msg.Stream.Close()
 		return c, nil
 	case teamsg.ModelSelectedMsg:
-		model := string(msg)
-		platform := c.platformModelMap[model]
-		if platform == c.currentPlatform {
-			c.chatClients[platform].SetModel(model)
-			return c, nil
-		}
-		c.chatClients[platform].SetModel(model)
+		client := llmclients.PlatformInitialization[msg.Platform](true)
+		client.SetModel(msg.Name)
+		c.chatClient = client
 		return c, nil
-	case teamsg.GetSupportedModelsMsg:
-		openaiModels := c.chatClients[llmclients.OpenAI].GetSupportedModels()
-		ollamaModels := c.chatClients[llmclients.Ollama].GetSupportedModels()
-		for _, m := range openaiModels {
-			c.platformModelMap[m] = llmclients.OpenAI
-		}
-		for _, m := range ollamaModels {
-			c.platformModelMap[m] = llmclients.Ollama
-		}
-		models := append(openaiModels, ollamaModels...)
-		if len(models) == 0 {
-			return c, func() tea.Msg { return teamsg.ModelsMsg{Models: []string{"No models available"}} }
-		}
-		return c, func() tea.Msg { return teamsg.ModelsMsg{Models: models} }
 	}
 	return c, nil
 }
@@ -148,7 +118,7 @@ func (c *Convo) Blur() {
 }
 
 func (c Convo) chat(msg string) tea.Msg {
-	streamreader, err := c.chatClients[c.currentPlatform].Prompt(context.Background(), msg)
+	streamreader, err := c.chatClient.Prompt(context.Background(), msg)
 	if err != nil {
 		panic(err)
 	}
@@ -156,7 +126,7 @@ func (c Convo) chat(msg string) tea.Msg {
 }
 
 func (c Convo) receiveChatStream(stream types.ChatStream) tea.Msg {
-	resp, respstream, err := c.chatClients[c.currentPlatform].GetDelta(context.Background(), stream.Stream)
+	resp, respstream, err := c.chatClient.GetDelta(context.Background(), stream.Stream)
 	if err != nil {
 		panic(err)
 	}

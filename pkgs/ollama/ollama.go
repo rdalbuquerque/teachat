@@ -21,31 +21,11 @@ import (
 	"github.com/ollama/ollama/version"
 )
 
-func (c *Client) GetSupportedModels() []string {
-	resp, err := c.getStream(context.Background(), http.MethodGet, "/api/tags", nil)
-	if err != nil {
-		panic(err)
-	}
-	// read through response and set ModelResponse object
-	// to the response from the server
-	var modelResp ListResponse
-	for resp.Scan() {
-		if err := json.Unmarshal(resp.Bytes(), &modelResp); err != nil {
-			panic(err)
-		}
-	}
-	var chatModels []string
-	for i := range modelResp.Models {
-		chatModels = append(chatModels, modelResp.Models[i].Model)
-	}
-	return chatModels
-}
-
 type Client struct {
 	base     *url.URL
 	http     *http.Client
 	stream   bool
-	model    string
+	model    types.LLMModel
 	messages []Message
 }
 
@@ -126,7 +106,7 @@ func New(stream bool) llminterface.Client {
 	}
 }
 
-func (c *Client) SetModel(model string) {
+func (c *Client) SetModel(model types.LLMModel) {
 	c.model = model
 }
 

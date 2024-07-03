@@ -1,7 +1,6 @@
 package pages
 
 import (
-	"context"
 	"teachat/pkgs/sections"
 	"teachat/pkgs/styles"
 
@@ -18,7 +17,7 @@ type ModelSelection struct {
 func NewModelSelectionPage() PageInterface {
 	p := &ModelSelection{}
 	p.name = ModelSelectionPage
-	p.AddSection(context.Background(), sections.ModelListSection)
+	p.AddSection(sections.NewModelList())
 	return p
 }
 
@@ -38,7 +37,7 @@ func (p *ModelSelection) GetPageName() PageName {
 	return p.name
 }
 
-func (p *ModelSelection) AddSection(ctx context.Context, section sections.SectionName) {
+func (p *ModelSelection) AddSection(section sections.Section) {
 	if p.sections == nil {
 		p.sections = make(map[sections.SectionName]sections.Section)
 	}
@@ -47,12 +46,11 @@ func (p *ModelSelection) AddSection(ctx context.Context, section sections.Sectio
 			p.sections[sec].Blur()
 		}
 	}
-	newSection := sectionNewFuncs[section](ctx)
-	newSection.SetDimensions(0, styles.Height)
-	newSection.Show()
-	newSection.Focus()
-	p.orderedSections = append(p.orderedSections, section)
-	p.sections[section] = newSection
+	section.SetDimensions(0, styles.Height)
+	section.Show()
+	section.Focus()
+	p.orderedSections = append(p.orderedSections, section.GetSectionName())
+	p.sections[section.GetSectionName()] = section
 }
 
 func (p *ModelSelection) Update(msg tea.Msg) (PageInterface, tea.Cmd) {

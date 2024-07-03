@@ -1,7 +1,6 @@
 package sections
 
 import (
-	"context"
 	"teachat/pkgs/styles"
 	"teachat/pkgs/teamsg"
 	"teachat/pkgs/types"
@@ -16,12 +15,16 @@ type ModelList struct {
 	list    list.Model
 }
 
-func NewModelList(_ context.Context) Section {
+func NewModelList() Section {
 	list := list.New([]list.Item{}, types.ModelItemDelegate{}, 0, 0)
 
 	return &ModelList{
 		list: list,
 	}
+}
+
+func (s *ModelList) GetSectionName() SectionName {
+	return ModelListSection
 }
 
 func (s *ModelList) SetDimensions(width, height int) {
@@ -50,11 +53,19 @@ func (s *ModelList) Update(msg tea.Msg) (Section, tea.Cmd) {
 			s.list = vp
 			return s, cmd
 		case teamsg.ModelsMsg:
-			items := make([]list.Item, len(msg.Models))
-			for i, model := range msg.Models {
-				items[i] = types.Model(model)
+			items := make([]list.Item, len(msg))
+			for i := range msg {
+				items[i] = msg[i]
 			}
 			return s, s.list.SetItems(items)
+		case teamsg.GetSupportedModelsMsg:
+			models := []types.Model{
+				{Name: types.GPT35, Platform: types.OpenAI},
+				{Name: types.GPT4, Platform: types.OpenAI},
+				{Name: types.GPT4o, Platform: types.OpenAI},
+				{Name: types.Llama3, Platform: types.Ollama},
+			}
+			return s, func() tea.Msg { return teamsg.ModelsMsg(models) }
 		}
 	}
 	return s, nil

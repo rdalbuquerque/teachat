@@ -6,27 +6,12 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 	"teachat/pkgs/llminterface"
 	"teachat/pkgs/types"
 	"teachat/pkgs/utils"
 
 	openai "github.com/sashabaranov/go-openai"
 )
-
-func (c *Client) GetSupportedModels() []string {
-	resp, err := c.ListModels(context.Background())
-	if err != nil {
-		panic(err)
-	}
-	var gptModels []string
-	for i := range resp.Models {
-		if strings.Contains(resp.Models[i].ID, "gpt") {
-			gptModels = append(gptModels, resp.Models[i].ID)
-		}
-	}
-	return gptModels
-}
 
 func New(stream bool) llminterface.Client {
 	openai_api_key := os.Getenv("OPENAI_API_KEY")
@@ -40,7 +25,7 @@ func New(stream bool) llminterface.Client {
 	}
 }
 
-func (c *Client) SetModel(model string) {
+func (c *Client) SetModel(model types.LLMModel) {
 	c.model = model
 }
 
@@ -78,7 +63,7 @@ type Client struct {
 	messages        []openai.ChatCompletionMessage
 	currentResponse string
 	*openai.Client
-	model  string
+	model  types.LLMModel
 	stream bool
 }
 
